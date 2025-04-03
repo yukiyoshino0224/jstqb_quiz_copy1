@@ -1,3 +1,91 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
+    <!DOCTYPE html>
+    <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>テストの基礎 - 問題1</title>
+      <style>
+        body {
+          font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+          background-color: #f8f8f8;
+          padding: 20px;
+        }
+        .container {
+          background-color: white;
+          border: 3px solid #2f628f;
+          border-radius: 10px;
+          padding: 30px;
+          max-width: 700px;
+          margin: 0 auto;
+        }
+        h1, h2 {
+          color: #2f2f2f;
+        }
+        h1 {
+          font-size: 20px;
+          margin-bottom: 10px;
+        }
+        h2 {
+          font-size: 26px;
+          border-left: 6px solid #2f628f;
+          padding-left: 10px;
+          margin-top: 0;
+        }
+        .question {
+          margin-bottom: 20px;
+        }
+        .options label {
+          display: block;
+          margin: 10px 0;
+        }
+        .answer {
+          margin-top: 20px;
+          color: white;
+          background-color: #f07f3b;
+          padding: 8px 15px;
+          display: inline-block;
+          border-radius: 5px;
+        }
+        .buttons {
+          margin-top: 20px;
+        }
+        .buttons button {
+          background-color: #e57c3a;
+          border: none;
+          color: white;
+          padding: 10px 20px;
+          font-size: 14px;
+          border-radius: 5px;
+          margin-right: 10px;
+          cursor: pointer;
+        }
+      </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>第[[${question.chapter}]]章 [[${question.chapter_title}]]</h1>
+            <h2>問題 [[${displayNumber}]]</h2>
+            <p><strong>[[${question.question}]]</strong></p>
+          
+            <form method="post" action="/submit">
+              <div class="options">
+                <div th:each="choice : ${question.choices}">
+                  <label>
+                    <input type="radio" name="answer" th:value="${choice.id}">
+                    [[${choice.choiceText}]]
+                  </label>
+                </div>
+              </div>
+              <div class="buttons">
+                <button type="submit">回答を確定</button>
+              </div>
+            </form>
+          
+            <form method="get" action="/quiz">
+              <button type="submit">次の問題へ</button>
+            </form>
+          </div>
+          
+    </body>
+    </html>
+    
