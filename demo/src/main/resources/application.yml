@@ -10,4 +10,4 @@ spring:
 
 logging:
   file:
-    name: ${LOG_FILE_NAME:curry.log}
+    name: ${LOG_FILE_NAME:jstqb-quiz.log}
