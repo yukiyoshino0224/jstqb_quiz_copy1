@@ -1,3 +1,46 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ja">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .message {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .sub-message {
+            font-size: 20px;
+            color: #333;
+        }
+        .button {
+            background-color: #d47d3f;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #b5652e;
+        }
+    </style>
+</head>
+<body>
+    <div class="message">ページが見つかりません</div>
+    <div class="sub-message">Page NOT Found</div>
+    <button class="button" onclick="location.href='index.html'">メニューへ</button>
+</body>
+</html>
