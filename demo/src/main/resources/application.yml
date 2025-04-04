@@ -8,6 +8,4 @@ spring:
     host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:1025}
 
-logging:
-  file:
-    name: ${LOG_FILE_NAME:jstqb-quiz.log}
+    
