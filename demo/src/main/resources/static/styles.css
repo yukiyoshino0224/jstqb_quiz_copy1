@@ -1,40 +1,37 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
+/* タイトル全体を囲むコンテナ */
+.title-container {
+    width: 100%; /* 横幅いっぱい */
+    background-color: #0f447c; /* 濃い青緑 */
+    text-align: center; /* 中央揃え */
+    padding: 20px 0; /* 上下に余白を追加 */
+    margin-bottom: 40px; /* メニューとの間隔 */
+    border: 2px solid black; /* 枠線を黒で細く */
+}
+
+/* タイトルのフォントスタイル */
+.title {
+    font-family: "HGS明朝E", serif; /* フォントを指定 */
+    color: white; /* 文字色は白 */
+    margin: 0; /* 余計なマージンを削除 */
+    font-size: 40px;
+}
+
+/* メニューリストのスタイル */
+.menu-list {
+    list-style-type: none; /* リストのマーカーを削除 */
     padding: 0;
 }
 
-h1, h2 {
-    color: #333;
-    text-align: center;
+/* 各メニューリンクのスタイル */
+.menu-link {
+    text-decoration: underline; /* 常に下線を表示 */
+    color:  #0f447c; /* 文字色は黒 */
+    display: block; /* リストアイテム全体をリンクに */
+    margin-bottom: 50px; /* 行間を2行分ほど空ける */
+    padding-left: 20px; /* 左詰め */
+    font-size: 25px; /* メニューの文字サイズを変更（例: 18px） */
 }
 
-ul {
-    list-style-type: none;
-}
-
-li {
-    margin-bottom: 10px;
-}
-
-a {
-    color: #0066cc;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #45a049;
+.menu-link:hover {
+    text-decoration: underline; /* ホバー時に下線を強調 */
 }
