@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,6 +41,8 @@
 <body>
     <div class="message">ページが見つかりません</div>
     <div class="sub-message">Page NOT Found</div>
-    <button class="button" onclick="location.href='menu.html'">メニューへ</button>
+    <a th:href="@{/menu}">
+        <button class="button">メニューへ</button>
+    </a>
 </body>
 </html>
