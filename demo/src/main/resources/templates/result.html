@@ -1,3 +1,107 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ja">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSTQB問題集</title>
+  <style>
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background-color: #f8f8f8;
+      padding: 20px;
+    }
+    .container {
+      background-color: white;
+      border: 3px solid #2f628f;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 24px;
+      color: #2f2f2f;
+      text-align: center;
+    }
+    .score {
+      text-align: center;
+      font-size: 32px;
+      color: #8cb4e2;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .result-item {
+      margin-top: 30px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+    }
+    .question-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .correct-mark {
+      color: #66bb66;
+      font-size: 24px;
+      margin-right: 10px;
+    }
+    .incorrect-mark {
+      color: #e74c3c;
+      font-size: 24px;
+      margin-right: 10px;
+    }
+    .options label {
+      display: block;
+      margin: 5px 0;
+    }
+    .correct-answer {
+      color: #66bb66;
+    }
+    .button-area {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .button-area button {
+      background-color: #e57c3a;
+      border: none;
+      color: white;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>第[[${chapterNumber}]]章 [[${chapterTitle}]]　結果</h1>
+
+    <div class="score">
+      [[${correctCount}]] / [[${totalQuestions}]] 問正解（正答率 [[${#numbers.formatDecimal(correctCount * 100.0 / totalQuestions, 0, 0)}]]%）
+    </div>
+
+    <div th:each="question, stat : ${questions}" class="result-item">
+      <div class="question-title">
+        <span th:if="${question.isCorrect}" class="correct-mark">◯</span>
+        <span th:unless="${question.isCorrect}" class="incorrect-mark">×</span>
+        問題[[${stat.index + 1}]]：[[${question.question}]]
+      </div>
+      <div class="options">
+        <div th:each="choice : ${question.choices}">
+          <label th:classappend="${choice.isCorrect} ? 'correct-answer' : ''">
+            [[${choice.choiceText}]]
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-area">
+      <form action="/menu" method="get">
+        <button type="submit">メニューへ</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
