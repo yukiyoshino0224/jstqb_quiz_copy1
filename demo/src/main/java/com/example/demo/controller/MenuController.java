@@ -17,15 +17,19 @@ public class MenuController {
         this.quizService = quizService;
     }
 
+    @GetMapping("/menu")
+    public String showMenu() {
+        return "menu";
+    }
+
     @GetMapping("/evaluate")
     public String evaluateAnswers(Model model) {
         // 仮に選択した回答リスト
         List<Integer> selectedAnswers = List.of(1, 2, 3);  // 実際にはフォームから取得する
-
-        
+    
         Result result = quizService.evaluateAnswers(selectedAnswers);
 
         model.addAttribute("result", result);
         return "result"; 
-}
+    }
 }
