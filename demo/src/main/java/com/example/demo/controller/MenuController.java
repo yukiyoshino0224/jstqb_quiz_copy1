@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Result;
 import com.example.demo.service.QuizService;
+import com.example.demo.model.Choice;
 import com.example.demo.model.Question;
 
 import org.springframework.stereotype.Controller;
@@ -37,7 +38,7 @@ public class MenuController {
     }
 
     @GetMapping("/chapter/{chapterNumber}")
-public String showChapter(@PathVariable int chapterNumber, Model model) {
+    public String showChapter(@PathVariable int chapterNumber, Model model) {
     // 複数問題取得
     List<Question> questions = quizService.getQuestionsByChapter(chapterNumber);
 
@@ -45,6 +46,19 @@ public String showChapter(@PathVariable int chapterNumber, Model model) {
     if (!questions.isEmpty()) {
         int displayNumber = 1;  // 仮の問題番号を設定
         Question question = questions.get(displayNumber - 1);  // displayNumber番目の問題を取得
+
+         // 正解の選択肢を取得
+         Choice correctChoice = question.getChoices().stream()
+    .filter(Choice::isCorrect) // 正解の選択肢を取得
+    .findFirst() 
+    .orElse(null); // 見つからなければnullを設定
+
+// 正解があればその選択肢をmodelに追加
+if (correctChoice != null) {
+    model.addAttribute("correctChoiceText", correctChoice.getChoiceText()); 
+} else {
+    model.addAttribute("correctChoiceText", "正解なし");
+}
 
         model.addAttribute("chapterNumber", chapterNumber);
         model.addAttribute("chapterTitle", question.getChapterTitle());
