@@ -1,92 +1,135 @@
-    <!DOCTYPE html>
-    <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>JSTQB問題集</title>
-      <style>
-        body {
-          font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-          background-color: #f8f8f8;
-          padding: 20px;
-        }
-        .container {
-          background-color: white;
-          border: 3px solid #2f628f;
-          border-radius: 10px;
-          padding: 30px;
-          max-width: 700px;
-          margin: 0 auto;
-        }
-        h1, h2 {
-          color: #2f2f2f;
-        }
-        h1 {
-          font-size: 20px;
-          margin-bottom: 10px;
-        }
-        h2 {
-          font-size: 26px;
-          border-left: 6px solid #2f628f;
-          padding-left: 10px;
-          margin-top: 0;
-        }
-        .question {
-          margin-bottom: 20px;
-        }
-        .options label {
-          display: block;
-          margin: 10px 0;
-        }
-        .answer {
-          margin-top: 20px;
-          color: white;
-          background-color: #f07f3b;
-          padding: 8px 15px;
-          display: inline-block;
-          border-radius: 5px;
-        }
-        .buttons {
-          margin-top: 20px;
-        }
-        .buttons button {
-          background-color: #e57c3a;
-          border: none;
-          color: white;
-          padding: 10px 20px;
-          font-size: 14px;
-          border-radius: 5px;
-          margin-right: 10px;
-          cursor: pointer;
-        }
-      </style>
-    </head>
-    <body>
-        <div class="container">
-          <h1>第[[${chapterNumber}]]章 [[${chapterTitle}]]</h1>
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSTQB問題集</title>
+  <style>
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background-color: #f8f8f8;
+      padding: 20px;
+    }
+    .container {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .chapter-info {
+      font-size: 22px;
+      color: #2f628f;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .question-box {
+      position: relative;
+      background-color: #ffffff;
+      border: 2px solid #0f447c;
+      border-radius: 8px;
+      padding: 30px 20px 20px;
+      margin-bottom: 20px;
+    }
+    .question-number {
+      position: absolute;
+      top: -15px;
+      left: 15px;
+      background-color: #2f628f;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .question-text {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .options {
+      margin-top: 10px;
+    }
+    .options label {
+      display: block;
+      margin: 10px 0;
+      padding-left: 10px;
+    }
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .button-row button {
+      background-color: #e57c3a;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button-row button#next-question {
+      background-color: #2f628f; /* 背景色を白に */
+      color: white; /* 文字色を黒に */
+      cursor: pointer; /* クリック可能状態 */
+      border: 1px solid #0f447c; /* ボーダーを追加 */
+    }
+    .correct-answer {
+      margin-top: 20px;
+      color: green;
+      font-size: 16px;
+      font-weight: bold;
+      display: none; /* 初期状態では非表示 */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="chapter-info">
+      第[[${chapterNumber}]]章 [[${chapterTitle}]]
+    </div>
 
-            <h2>問題 [[${displayNumber}]]</h2>
-            <p><strong>[[${question.question}]]</strong></p>
-          
-            <form method="post" action="/submit">
-              <div class="options">
-                <div th:each="choice : ${question.choices}">
-                  <label>
-                    <input type="radio" name="answer" th:value="${choice.id}">
-                    [[${choice.choiceText}]]
-                  </label>
-                </div>
-              </div>
-              <div class="buttons">
-                <button type="submit">回答を確定</button>
-              </div>
-            </form>
-          
-            <form method="get" action="/quiz">
-              <button type="submit">次の問題へ</button>
-            </form>
-          </div>
-          
-    </body>
-    </html>
-    
+    <div class="question-box">
+      <div class="question-number">問[[${displayNumber}]]</div>
+      <p class="question-text">[[${question.question}]]</p>
+    </div>
+
+    <form method="post" action="/submit" id="quiz-form">
+      <div class="options" th:each="choice : ${question.choices}">
+        <label>
+          <input type="radio" name="answer" th:value="${choice.id}" id="choice-[[${choice.id}]]">
+          [[${choice.choiceText}]]
+        </label>
+      </div>
+      <div class="button-row">
+        <button type="submit" id="submit-button">回答を確定</button>
+        <button type="button" id="next-question" onclick="location.href='/quiz'">次の問題へ</button>
+      </div>
+    </form>
+
+    <!-- 正解の選択肢を表示する部分 -->
+    <div class="correct-answer" id="correct-answer">
+      正解：[[${correctChoiceText}]]
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('quiz-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // フォームの送信を防止
+
+      // 正解の選択肢を表示
+      const correctAnswerText = "[[${correctChoiceText}]]"; // コントローラーから渡された正解
+      const correctAnswerElement = document.getElementById('correct-answer');
+      correctAnswerElement.textContent = "正解：" + correctAnswerText; // 正解の内容をセット
+      correctAnswerElement.style.display = 'block'; // 正解を表示
+
+      // 次の問題へボタンの色変更（黒字にして背景白）
+      const nextQuestionButton = document.getElementById('next-question');
+      nextQuestionButton.style.backgroundColor = '#ffffff'; // 背景色を白
+      nextQuestionButton.style.color = '#000000'; // 文字色を黒
+      nextQuestionButton.style.cursor = 'pointer'; // クリック可能に
+    });
+  </script>
+</body>
+</html>
