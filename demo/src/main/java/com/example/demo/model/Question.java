@@ -4,18 +4,18 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "questions")  //テーブルの指定
+@Table(name = "questions")  // questions テーブルを使用
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private int chapter;
+
+    private int chapter;  // 章番号
 
     private String question;  // 問題文
 
-    @ElementCollection  // リストを格納するために使用
-    private List<String> choices;  // 選択肢を格納するフィールドを追加
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Choice> choices;  // 選択肢のリスト（Choiceクラスを参照）
 
     // Getter と Setter メソッド
     public String getQuestion() {
@@ -34,11 +34,11 @@ public class Question {
         this.chapter = chapter;
     }
 
-    public List<String> getChoices() {
+    public List<Choice> getChoices() {
         return choices;
     }
 
-    public void setChoices(List<String> choices) {
+    public void setChoices(List<Choice> choices) {
         this.choices = choices;
     }
 }
