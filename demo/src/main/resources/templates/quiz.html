@@ -50,9 +50,12 @@
       margin-top: 10px;
     }
     .options label {
-      display: block;
+      display: flex; /* フレックスボックスを使用 */
+      align-items: center; /* ラジオボタンとテキストを縦方向で中央揃え */
       margin: 10px 0;
       padding-left: 10px;
+      font-size: 16px; /* 文字サイズ */
+      gap: 10px; /* ラジオボタンとテキストの間隔 */
     }
     .button-row {
       display: flex;
@@ -70,17 +73,18 @@
       cursor: pointer;
     }
     .button-row button#next-question {
-      background-color: #2f628f; /* 背景色を白に */
-      color: white; /* 文字色を黒に */
-      cursor: pointer; /* クリック可能状態 */
-      border: 1px solid #0f447c; /* ボーダーを追加 */
+      background-color: #cccccc;
+      color: white;
+      cursor: not-allowed; /* 初期状態では無効化 */
+    
     }
     .correct-answer {
       margin-top: 20px;
-      color: green;
+      color: #2f628f;
       font-size: 16px;
       font-weight: bold;
       display: none; /* 初期状態では非表示 */
+      margin-left: 10px; /* 左側に10pxの余白を追加 */
     }
   </style>
 </head>
@@ -88,6 +92,7 @@
   <div class="container">
     <div class="chapter-info">
       第[[${chapterNumber}]]章 [[${chapterTitle}]]
+      <br><br>
     </div>
 
     <div class="question-box">
@@ -98,19 +103,23 @@
     <form method="post" action="/submit" id="quiz-form">
       <div class="options" th:each="choice : ${question.choices}">
         <label>
+          <br>
+          <br>
+          <br>
           <input type="radio" name="answer" th:value="${choice.id}" id="choice-[[${choice.id}]]">
           [[${choice.choiceText}]]
         </label>
       </div>
+      <br>
       <div class="button-row">
         <button type="submit" id="submit-button">回答を確定</button>
-        <button type="button" id="next-question" onclick="location.href='/quiz'">次の問題へ</button>
+        <button type="button" id="next-question" onclick="location.href='/quiz'" disabled>次の問題へ</button>
       </div>
     </form>
 
     <!-- 正解の選択肢を表示する部分 -->
     <div class="correct-answer" id="correct-answer">
-      正解：[[${correctChoiceText}]]
+      答え：[[${correctChoiceText}]]
     </div>
   </div>
 
@@ -121,14 +130,21 @@
       // 正解の選択肢を表示
       const correctAnswerText = "[[${correctChoiceText}]]"; // コントローラーから渡された正解
       const correctAnswerElement = document.getElementById('correct-answer');
-      correctAnswerElement.textContent = "正解：" + correctAnswerText; // 正解の内容をセット
+      correctAnswerElement.textContent = "答え：" + correctAnswerText; // 正解の内容をセット
       correctAnswerElement.style.display = 'block'; // 正解を表示
 
-      // 次の問題へボタンの色変更（黒字にして背景白）
+      // 「次の問題へ」ボタンの色変更（黒字にして背景白）
       const nextQuestionButton = document.getElementById('next-question');
-      nextQuestionButton.style.backgroundColor = '#ffffff'; // 背景色を白
-      nextQuestionButton.style.color = '#000000'; // 文字色を黒
+      nextQuestionButton.disabled = false; // 次の問題へボタンを有効化
+      nextQuestionButton.style.backgroundColor = '#e57c3a'; // 背景色を元に戻す
+      nextQuestionButton.style.color = 'white'; // 文字色を元に戻す
       nextQuestionButton.style.cursor = 'pointer'; // クリック可能に
+
+      // 「回答を確定」ボタンを無効にする
+      const submitButton = document.getElementById('submit-button');
+      submitButton.disabled = true; // ボタンを無効にする
+      submitButton.style.cursor = 'not-allowed'; // カーソルを変更
+      submitButton.style.backgroundColor = '#cccccc'; // ボタンをグレーアウト
     });
   </script>
 </body>
