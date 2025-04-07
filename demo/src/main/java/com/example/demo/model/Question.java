@@ -14,6 +14,9 @@ public class Question {
 
     private String question;  // 問題文
 
+    private String chapterTitle;
+
+
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Choice> choices;  // 選択肢のリスト（Choiceクラスを参照）
 
@@ -41,4 +44,13 @@ public class Question {
     public void setChoices(List<Choice> choices) {
         this.choices = choices;
     }
+
+    public String getChapterTitle() {
+        return chapterTitle;
+    }
+
+    public void setChapterTitle(String chapterTitle) {
+        this.chapterTitle = chapterTitle;
+    }
+    
 }

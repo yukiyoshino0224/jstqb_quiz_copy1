@@ -47,7 +47,7 @@ public String showChapter(@PathVariable int chapterNumber, Model model) {
         Question question = questions.get(displayNumber - 1);  // displayNumber番目の問題を取得
 
         model.addAttribute("chapterNumber", chapterNumber);
-        model.addAttribute("chapterTitle", "第" + chapterNumber + "章");
+        model.addAttribute("chapterTitle", question.getChapterTitle());
         model.addAttribute("displayNumber", displayNumber);
         model.addAttribute("question", question);
     }
