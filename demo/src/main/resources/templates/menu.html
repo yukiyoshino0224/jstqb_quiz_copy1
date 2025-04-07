@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>一問一答アプリ - メニュー</title>
-</head>
-<body>
-    <h1>一問一答アプリ</h1>
-    <ul>
-        <li><a th:href="@{/chapter/1}">1章</a></li>
-        <li><a th:href="@{/chapter/2}">2章</a></li>
-        <li><a th:href="@{/chapter/3}">3章</a></li>
-        <li><a th:href="@{/chapter/4}">4章</a></li>
-        <li><a th:href="@{/chapter/5}">5章</a></li>
-        <li><a th:href="@{/chapter/6}">6章</a></li>
-        <li><a th:href="@{/quiz/random}">模擬試験</a></li>
-    </ul>
-</body>
-</html>
+    <head>
+        <meta charset="UTF-8">
+        <title>JSTQB問題集</title>
+    </head>
+    <body>
+        <h1>JSTQB問題集</h1>
+        <ul>
+            <li th:each="chapter : ${chapters}">
+                <a th:href="@{/chapter/{id}(id=${chapter.id})}" th:text="${chapter.name}"></a>
+            </li>
+            <li>
+                <a th:href="@{/mock}" >模試</a>
+            </li>
+        </ul>
+    </body>
+    </html>
+    
