@@ -50,12 +50,12 @@
       margin-top: 10px;
     }
     .options label {
-      display: flex; /* フレックスボックスを使用 */
-      align-items: center; /* ラジオボタンとテキストを縦方向で中央揃え */
+      display: flex;
+      align-items: center;
       margin: 10px 0;
       padding-left: 10px;
-      font-size: 16px; /* 文字サイズ */
-      gap: 10px; /* ラジオボタンとテキストの間隔 */
+      font-size: 16px;
+      gap: 10px;
     }
     .button-row {
       display: flex;
@@ -64,27 +64,26 @@
       margin-top: 30px;
     }
     .button-row button {
-      background-color: #e57c3a;
+      background-color: #cccccc; /* 初期状態でグレー */
       border: none;
       color: white;
       padding: 10px 20px;
       font-size: 14px;
       border-radius: 5px;
-      cursor: pointer;
+      cursor: not-allowed;
     }
     .button-row button#next-question {
-      background-color: #cccccc;
+      background-color: #cccccc; /* 初期状態でグレー */
       color: white;
-      cursor: not-allowed; /* 初期状態では無効化 */
-    
+      cursor: not-allowed;
     }
     .correct-answer {
       margin-top: 20px;
       color: #2f628f;
       font-size: 16px;
       font-weight: bold;
-      display: none; /* 初期状態では非表示 */
-      margin-left: 10px; /* 左側に10pxの余白を追加 */
+      display: none;
+      margin-left: 10px;
     }
   </style>
 </head>
@@ -111,58 +110,65 @@
         </label>
       </div>
       <br>
-      <!-- 中略（head や style はそのままでOK） -->
-
       <div class="button-row">
-        <button type="submit" id="submit-button">回答を確定</button>
-      
-        <!-- 次の問題がある場合のみボタンを表示 -->
-        <button type="button" id="next-question" 
-                style="background-color: #cccccc; color: white; padding: 10px 20px; border-radius: 5px; font-size: 14px; display: inline-block;" 
-                disabled>
-          次へ
-        </button>
+        <button type="submit" id="submit-button" disabled>回答を確定</button>
+        <button type="button" id="next-question" style="background-color: #cccccc;" disabled>次へ</button>
       </div>      
-</div>
-
     </form>
 
-    <!-- 正解の選択肢を表示する部分 -->
     <div class="correct-answer" id="correct-answer">
       答え：[[${correctChoiceText}]]
     </div>
   </div>
 
   <script th:inline="javascript">
+    const submitButton = document.getElementById('submit-button');
+    const nextButton = document.getElementById('next-question');
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
+    
+    // 最初は「回答を確定」ボタンを無効化
+    submitButton.disabled = true;
+    submitButton.style.backgroundColor = '#cccccc';  // 最初はグレーに設定
+
+    // ラジオボタンが選択されると「回答を確定」ボタンを有効化
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', function() {
+        submitButton.disabled = false;  // 有効化
+        submitButton.style.backgroundColor = '#e57c3a';  // オレンジ色に変更
+        submitButton.style.cursor = 'pointer';  // カーソルをポインターに変更
+      });
+    });
+
+    // フォーム送信時の処理
     document.getElementById('quiz-form').addEventListener('submit', function(event) {
-  event.preventDefault();
+      event.preventDefault();
 
-  const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';  // ここで正しい答えを設定
-  const correctAnswerElement = document.getElementById('correct-answer');
-  correctAnswerElement.textContent = "答え：" + correctAnswerText;
-  correctAnswerElement.style.display = 'block';
+      const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';  // 正しい答えを設定
+      const correctAnswerElement = document.getElementById('correct-answer');
+      correctAnswerElement.textContent = "答え：" + correctAnswerText;
+      correctAnswerElement.style.display = 'block';
 
-  const nextQuestionButton = document.getElementById('next-question');
-  nextQuestionButton.disabled = false; // ボタンを有効化
-  nextQuestionButton.style.backgroundColor = '#e57c3a';
-  nextQuestionButton.style.color = 'white';
-  nextQuestionButton.style.cursor = 'pointer';
+      const nextQuestionButton = document.getElementById('next-question');
+      
+      // 「次へ」ボタンの色とカーソルを変更（回答確定後）
+      nextQuestionButton.disabled = false;  // ボタンを有効化
+      nextQuestionButton.style.backgroundColor = '#e57c3a';  // オレンジ色に変更
+      nextQuestionButton.style.cursor = 'pointer';  // カーソルをポインターに変更
 
-  // 次の問題へ遷移するリンク設定
-  const chapterNumber = /*[[${chapterNumber}]]*/ 1;  // 仮の値
-  const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;  // 仮の値
-  const nextQuestionNumber = currentQuestionNumber + 1;
+      // 次の問題へ遷移するリンク設定
+      const chapterNumber = /*[[${chapterNumber}]]*/ 1;  // 仮の値
+      const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;  // 仮の値
+      const nextQuestionNumber = currentQuestionNumber + 1;
 
-  nextQuestionButton.onclick = function() {
-    window.location.href = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-  };
+      nextQuestionButton.onclick = function() {
+        window.location.href = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+      };
 
-  const submitButton = document.getElementById('submit-button');
-  submitButton.disabled = true;
-  submitButton.style.cursor = 'not-allowed';
-  submitButton.style.backgroundColor = '#cccccc';
-});
-
+      // 送信ボタンは一度押されたら無効化
+      submitButton.disabled = true;
+      submitButton.style.cursor = 'not-allowed';
+      submitButton.style.backgroundColor = '#cccccc';  // ボタンを再びグレーに
+    });
   </script>  
 
 </body>
