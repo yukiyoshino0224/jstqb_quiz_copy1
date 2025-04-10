@@ -141,7 +141,13 @@
 
     // フォーム送信時の処理
     document.getElementById('quiz-form').addEventListener('submit', function(event) {
-      event.preventDefault();
+    event.preventDefault();
+
+     // ラジオボタンを無効化
+     radioButtons.forEach(radio => {
+     radio.disabled = true;
+     });
+
 
       const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';  // 正しい答えを設定
       const correctAnswerElement = document.getElementById('correct-answer');
