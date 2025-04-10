@@ -1,5 +1,5 @@
 --テーブル削除
-DROP TABLE IF EXISTS choices, questions, ansers CASCADE;
+DROP TABLE IF EXISTS choices, questions, answers CASCADE;
 
 -------------
 
