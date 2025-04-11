@@ -79,7 +79,7 @@
     <h1>第[[${chapterNumber}]]章 [[${chapterTitle}]]　結果</h1>
 
     <div class="score">
-      [[${correctCount}]] / [[${totalQuestions}]] 問正解（正答率 [[${#numbers.formatDecimal(correctCount * 100.0 / totalQuestions, 0, 0)}]]%）
+      [[${result.correctCount}]] / [[${result.totalCount}]] 問　　正解率（[[${#numbers.formatDecimal(result.correctCount * 100.0 / result.totalCount, 0, 0)}]]%）
     </div>
 
     <div th:each="question, stat : ${questions}" class="result-item">

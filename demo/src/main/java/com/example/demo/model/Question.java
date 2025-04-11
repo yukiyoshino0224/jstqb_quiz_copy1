@@ -6,6 +6,7 @@ import java.util.List;
 @Entity
 @Table(name = "questions")  // questions テーブルを使用
 public class Question {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,11 +17,19 @@ public class Question {
 
     private String chapterTitle;
 
-
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Choice> choices;  // 選択肢のリスト（Choiceクラスを参照）
 
-    // Getter と Setter メソッド
+    // ↓↓↓ 追加した getter（重要！）↓↓↓
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    // その他 Getter と Setter メソッド
     public String getQuestion() {
         return question;
     }
@@ -52,5 +61,4 @@ public class Question {
     public void setChapterTitle(String chapterTitle) {
         this.chapterTitle = chapterTitle;
     }
-    
 }
