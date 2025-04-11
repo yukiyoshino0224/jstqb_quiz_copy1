@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
+
 @Controller
 public class MenuController {
 
@@ -75,5 +78,66 @@ public class MenuController {
     @GetMapping("/chapter/{chapterNumber}")
     public String showChapter(@PathVariable int chapterNumber, Model model) {
         return "redirect:/chapter/" + chapterNumber + "/question/1";
+    }
+
+    // 模擬試験の初期画面（ランダムな40問）
+    @GetMapping("/quiz/random")
+    @Transactional
+    public String startMockExam(Model model, HttpSession session) {
+        List<Question> mockExamQuestions = quizService.getRandomQuestionsForMockExam();
+
+        // 最初の問題を表示
+        if (!mockExamQuestions.isEmpty()) {
+            Question question = mockExamQuestions.get(0);
+
+            session.setAttribute("mockExamQuestions", mockExamQuestions);
+
+             // 正解の選択肢
+            Choice correctChoice = question.getChoices().stream()
+            .filter(Choice::isCorrect)
+            .findFirst()
+            .orElse(null);
+
+            // 問題の情報を設定
+            model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし"); // ここでは仮に"正解なし"
+            model.addAttribute("question", question);
+            model.addAttribute("hasNext", mockExamQuestions.size() > 1); // 次の問題があるかの判定
+            model.addAttribute("displayNumber", 1);
+        }
+
+        return "quiz";
+    }
+
+    // 模擬試験の次の問題
+    @GetMapping("/quiz/random/question/{questionNumber}")
+    public String showMockExamQuestion(
+        @PathVariable int questionNumber,
+        Model model,
+        HttpSession session
+    ) {
+        List<Question> mockExamQuestions = (List<Question>) session.getAttribute("mockExamQuestions");
+
+        // もし範囲外の番号ならエラーページ
+        if (mockExamQuestions == null || questionNumber < 1 || questionNumber > mockExamQuestions.size()) {
+            System.out.println("ERROR: mockExamQuestions is null in model");
+            model.addAttribute("message", "問題が存在しません");
+            return "error";
+        }
+
+        // 現在の問題を取得
+        Question question = mockExamQuestions.get(questionNumber - 1);
+    
+        // 正解の選択肢
+        Choice correctChoice = question.getChoices().stream()
+            .filter(Choice::isCorrect)
+            .findFirst()
+            .orElse(null);
+
+    model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし");
+    model.addAttribute("question", question);
+    model.addAttribute("hasNext", questionNumber < mockExamQuestions.size());
+    model.addAttribute("displayNumber", questionNumber);
+
+        return "quiz";
     }
 }
