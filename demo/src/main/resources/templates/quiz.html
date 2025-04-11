@@ -131,67 +131,85 @@
     const nextButton = document.getElementById('next-question');
     const radioButtons = document.querySelectorAll('input[type="radio"]');
     
-    // 最初は「回答を確定」ボタンを無効化
-    submitButton.disabled = true;
-    submitButton.style.backgroundColor = '#cccccc';  // 最初はグレーに設定
-
-    // ラジオボタンが選択されると「回答を確定」ボタンを有効化
+    // ラジオボタンが選択されたらボタンを有効に
     radioButtons.forEach(radio => {
       radio.addEventListener('change', function() {
-        submitButton.disabled = false;  // 有効化
-        submitButton.style.backgroundColor = '#e57c3a';  // オレンジ色に変更
-        submitButton.style.cursor = 'pointer';  // カーソルをポインターに変更
+        submitButton.disabled = false;
+        submitButton.style.backgroundColor = '#e57c3a';
+        submitButton.style.cursor = 'pointer';
       });
     });
-
-    // フォーム送信時の処理
+  
     document.getElementById('quiz-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-     // ラジオボタンを無効化
-     radioButtons.forEach(radio => {
-     radio.disabled = true;
-     });
-
-
-      const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';  // 正しい答えを設定
-      const correctAnswerElement = document.getElementById('correct-answer');
-      correctAnswerElement.textContent = "答え：" + correctAnswerText;
-      correctAnswerElement.style.display = 'block';
-
-      const nextQuestionButton = document.getElementById('next-question');
-      
-      // 「次へ」ボタンの色とカーソルを変更（回答確定後）
-      nextQuestionButton.disabled = false;  // ボタンを有効化
-      nextQuestionButton.style.backgroundColor = '#e57c3a';  // オレンジ色に変更
-      nextQuestionButton.style.cursor = 'pointer';  // カーソルをポインターに変更
-
-      // 次の問題へ遷移するリンク設定
-      const chapterNumber = /*[[${chapterNumber}]]*/ 1;  // 仮の値
-      const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;  // 仮の値
-      const nextQuestionNumber = currentQuestionNumber + 1;
-
-      nextQuestionButton.onclick = function() {
-    let nextUrl = "";
-
-    // chapterNumberがある場合（章の問題）
-    if (chapterNumber) {
-        nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-    } else {
-        // chapterNumberがない場合（模擬試験のランダム問題）
-        nextUrl = "/quiz/random/question/" + nextQuestionNumber;
-    }
-
-    // 遷移先のURLに遷移
-    window.location.href = nextUrl;
-    };
-
-      // 送信ボタンは一度押されたら無効化
-      submitButton.disabled = true;
-      submitButton.style.cursor = 'not-allowed';
-      submitButton.style.backgroundColor = '#cccccc';  // ボタンを再びグレーに
+      event.preventDefault();
+  
+      // 選択したanswerの値を取得
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) return;
+  
+      const answerValue = selected.value;
+  
+      // chapterNumberとdisplayNumberを取得（Thymeleafで埋め込む）
+      const chapterNumber = /*[[${chapterNumber}]]*/ 1;
+      const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
+  
+      // サーバーへPOST送信（fetch使用）
+      fetch('/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `answer=${encodeURIComponent(answerValue)}`
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('サーバーエラー');
+        return response.text(); // テキスト or JSON にする（必要に応じて）
+      })
+      .then(data => {
+        // 送信成功後の処理
+  
+        // ラジオボタン無効化
+        radioButtons.forEach(radio => {
+          radio.disabled = true;
+        });
+  
+        // 正解の表示
+        const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';
+        const correctAnswerElement = document.getElementById('correct-answer');
+        correctAnswerElement.textContent = "答え：" + correctAnswerText;
+        correctAnswerElement.style.display = 'block';
+  
+        // 「次へ」ボタン有効化
+        nextButton.disabled = false;
+        nextButton.style.backgroundColor = '#e57c3a';
+        nextButton.style.cursor = 'pointer';
+  
+        // 「次へ」クリックで次のURLへ遷移
+        const nextQuestionNumber = currentQuestionNumber + 1;
+        nextButton.onclick = function() {
+          let nextUrl = "";
+          if (chapterNumber) {
+            if (nextQuestionNumber > 10) {
+              nextUrl = "/evaluate"; // 10問目終わったら評価画面へ
+            } else {
+              nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+            }
+          } else {
+            nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+          }
+          window.location.href = nextUrl;
+        };
+  
+        // 「回答を確定」ボタン無効化
+        submitButton.disabled = true;
+        submitButton.style.cursor = 'not-allowed';
+        submitButton.style.backgroundColor = '#cccccc';
+      })
+      .catch(error => {
+        alert("エラーが発生しました：" + error.message);
+      });
     });
-  </script>  
+  </script>    
 
 </body>
 </html>

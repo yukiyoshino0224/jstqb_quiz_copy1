@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Result;
+import com.example.demo.repository.AnswerRepository;
+import com.example.demo.model.Answer;
 import com.example.demo.model.Choice;
 import com.example.demo.model.Question;
 import com.example.demo.service.QuizService;
@@ -18,10 +20,12 @@ import jakarta.transaction.Transactional;
 public class MenuController {
 
     private final QuizService quizService;
+    private final AnswerRepository answerRepository;
 
-    public MenuController(QuizService quizService) {
-        this.quizService = quizService;
-    }
+    public MenuController(QuizService quizService, AnswerRepository answerRepository) {
+    this.quizService = quizService;
+    this.answerRepository = answerRepository;
+}
 
     @GetMapping("/menu")
     public String showMenu() {
@@ -30,11 +34,14 @@ public class MenuController {
 
     @GetMapping("/evaluate")
     public String evaluateAnswers(Model model) {
-        List<Integer> selectedAnswers = List.of(1, 2, 3); // 仮データ
-        Result result = quizService.evaluateAnswers(selectedAnswers);
-        model.addAttribute("result", result);
-        return "result";
-    }
+    List<Answer> answers = answerRepository.findAll(); // ←全件とって評価！
+    int correctCount = (int) answers.stream().filter(Answer::isCorrect).count(); // 正解の数カウント
+
+    Result result = new Result(correctCount, answers.size()); // ←Result に詰める（作ってる？）
+    model.addAttribute("result", result);
+    return "result";
+}
+
 
     // クイズページ表示（指定された章と問題番号）
     @GetMapping("/chapter/{chapterNumber}/question/{questionNumber}")
@@ -79,6 +86,42 @@ public class MenuController {
     public String showChapter(@PathVariable int chapterNumber, Model model) {
         return "redirect:/chapter/" + chapterNumber + "/question/1";
     }
+
+    @PostMapping("/submit")
+@ResponseBody
+public String handleAnswer(@RequestParam("answer") Long selectedChoiceId, HttpSession session) {
+    System.out.println("受け取った answerId: " + selectedChoiceId);
+
+    // 現在の質問リストとインデックスをセッションから取得
+    List<Question> questions = (List<Question>) session.getAttribute("mockExamQuestions");
+    Integer currentQuestionIndex = (Integer) session.getAttribute("currentQuestionIndex");
+
+    if (questions == null || currentQuestionIndex == null || currentQuestionIndex >= questions.size()) {
+        return "セッションが見つからないか、問題番号が不正です";
+    }
+
+    Question currentQuestion = questions.get(currentQuestionIndex);
+
+    // 選択肢が正解かチェック
+    boolean isCorrect = currentQuestion.getChoices().stream()
+        .filter(Choice::isCorrect)
+        .anyMatch(choice -> choice.getId().equals(selectedChoiceId));
+
+    // 回答を保存
+    Answer answer = new Answer();
+    answer.setQuestionId(currentQuestion.getId());
+    answer.setSelectedChoiceId(selectedChoiceId);
+    answer.setCorrect(isCorrect);
+
+    // ここでAnswerRepository使って保存！
+    answerRepository.save(answer);
+
+    // 次の問題用にインデックスを更新（必要なら）
+    session.setAttribute("currentQuestionIndex", currentQuestionIndex + 1);
+
+    return "OK";
+}
+
 
     // 模擬試験の初期画面（ランダムな40問）
     @GetMapping("/quiz/random")
