@@ -90,8 +90,13 @@
 <body>
   <div class="container">
     <div class="chapter-info">
+    <span th:if="${chapterNumber != null}">
       第[[${chapterNumber}]]章 [[${chapterTitle}]]
-      <br><br>
+    </span>
+    <span th:if="${chapterNumber == null}">
+      模擬試験
+    </span>
+    <br><br>
     </div>
 
     <div class="question-box">
@@ -167,8 +172,19 @@
       const nextQuestionNumber = currentQuestionNumber + 1;
 
       nextQuestionButton.onclick = function() {
-        window.location.href = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-      };
+    let nextUrl = "";
+
+    // chapterNumberがある場合（章の問題）
+    if (chapterNumber) {
+        nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+    } else {
+        // chapterNumberがない場合（模擬試験のランダム問題）
+        nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+    }
+
+    // 遷移先のURLに遷移
+    window.location.href = nextUrl;
+    };
 
       // 送信ボタンは一度押されたら無効化
       submitButton.disabled = true;

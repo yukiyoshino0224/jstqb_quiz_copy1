@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import com.example.demo.repository.QuestionRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class QuizService {
@@ -64,8 +67,30 @@ public class QuizService {
     }
 
     // getQuestionsByChapterメソッドを追加
+    // getQuestionsByChapterメソッド
     public List<Question> getQuestionsByChapter(int chapterNumber) {
-        // 章番号に基づいてデータベースから質問を取得
         return questionRepository.findByChapter(chapterNumber);  // Repositoryを使ってデータベースから質問を取得
     }
+
+    // 模擬試験用：1〜6章の問題からランダムに40問を取得
+    @Transactional
+    public List<Question> getRandomQuestionsForMockExam() {
+        List<Question> allQuestions = new ArrayList<>();
+
+        // 1〜6章のすべての問題を取得
+        for (int chapter = 1; chapter <= 6; chapter++) {
+            allQuestions.addAll(getQuestionsByChapter(chapter));
+        }
+
+        // choices を強制的に読み込む（Hibernateセッション内で）
+        for (Question q : allQuestions) {
+            q.getChoices().size();  // これでLAZYロードされる
+        }
+
+        // ランダムにシャッフル
+        Collections.shuffle(allQuestions);
+
+        // 最初の40問を選択
+        return allQuestions.subList(0, 40);
+    }    
 }

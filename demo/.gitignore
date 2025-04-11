@@ -6,6 +6,10 @@ log/
 *.log
 *.gz
 
+# logs と log ディレクトリ内の全てのファイルを無視
+logs/**
+log/**
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
