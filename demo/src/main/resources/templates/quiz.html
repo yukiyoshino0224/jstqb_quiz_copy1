@@ -141,74 +141,72 @@
     });
   
     document.getElementById('quiz-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-  
-      // 選択したanswerの値を取得
-      const selected = document.querySelector('input[name="answer"]:checked');
-      if (!selected) return;
-  
-      const answerValue = selected.value;
-  
-      // chapterNumberとdisplayNumberを取得（Thymeleafで埋め込む）
-      const chapterNumber = /*[[${chapterNumber}]]*/ 1;
-      const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
-  
-      // サーバーへPOST送信（fetch使用）
-      fetch('/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `answer=${encodeURIComponent(answerValue)}`
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('サーバーエラー');
-        return response.text(); // テキスト or JSON にする（必要に応じて）
-      })
-      .then(data => {
-        // 送信成功後の処理
-  
-        // ラジオボタン無効化
-        radioButtons.forEach(radio => {
-          radio.disabled = true;
-        });
-  
-        // 正解の表示
-        const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';
-        const correctAnswerElement = document.getElementById('correct-answer');
-        correctAnswerElement.textContent = "答え：" + correctAnswerText;
-        correctAnswerElement.style.display = 'block';
-  
-        // 「次へ」ボタン有効化
-        nextButton.disabled = false;
-        nextButton.style.backgroundColor = '#e57c3a';
-        nextButton.style.cursor = 'pointer';
-  
-        // 「次へ」クリックで次のURLへ遷移
-        const nextQuestionNumber = currentQuestionNumber + 1;
-        nextButton.onclick = function() {
-          let nextUrl = "";
-          if (chapterNumber) {
-            if (nextQuestionNumber > 10) {
-              nextUrl = "/evaluate"; // 10問目終わったら評価画面へ
-            } else {
-              nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-            }
-          } else {
-            nextUrl = "/quiz/random/question/" + nextQuestionNumber;
-          }
-          window.location.href = nextUrl;
-        };
-  
-        // 「回答を確定」ボタン無効化
-        submitButton.disabled = true;
-        submitButton.style.cursor = 'not-allowed';
-        submitButton.style.backgroundColor = '#cccccc';
-      })
-      .catch(error => {
-        alert("エラーが発生しました：" + error.message);
-      });
+  event.preventDefault();
+
+  const selected = document.querySelector('input[name="answer"]:checked');
+  if (!selected) return;
+
+  const answerValue = selected.value;
+
+  // ここが修正ポイント！
+  const chapterNumber = /*[[${chapterNumber}]]*/ null;
+  const postUrl = chapterNumber != null ? '/chapterSubmit' : '/submit';
+  const questionId = /*[[${question.id}]]*/ 0;
+
+fetch('/submit', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: `answer=${encodeURIComponent(answerValue)}&questionId=${questionId}`
+})
+  .then(data => {
+    // 以下はそのまま（正解表示・次へ・ボタン制御など）
+    radioButtons.forEach(radio => {
+      radio.disabled = true;
     });
+
+    const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';
+    const correctAnswerElement = document.getElementById('correct-answer');
+    correctAnswerElement.textContent = "答え：" + correctAnswerText;
+    correctAnswerElement.style.display = 'block';
+
+    nextButton.disabled = false;
+    nextButton.style.backgroundColor = '#e57c3a';
+    nextButton.style.cursor = 'pointer';
+
+    const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
+    const nextQuestionNumber = currentQuestionNumber + 1;
+    nextButton.onclick = function () {
+    let nextUrl = "";
+
+    if (chapterNumber) {
+      if (nextQuestionNumber > 10) {
+        nextUrl = "/evaluate";
+      } else {
+        nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+      }
+    } else {
+      if (nextQuestionNumber > 40) {
+        nextUrl = "/evaluate";
+    } else {
+      nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+    }
+  }
+
+  window.location.href = nextUrl;
+};
+
+
+    submitButton.disabled = true;
+    submitButton.style.cursor = 'not-allowed';
+    submitButton.style.backgroundColor = '#cccccc';
+  })
+  .catch(error => {
+    alert("エラーが発生しました：" + error.message);
+  });
+});
+
   </script>    
 
 </body>
