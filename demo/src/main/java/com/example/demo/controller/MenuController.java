@@ -27,10 +27,10 @@ public class MenuController {
     this.answerRepository = answerRepository;
 }
 
-    @GetMapping("/menu")
+   /*  @GetMapping("/menu")
     public String showMenu() {
         return "menu";
-    }
+    } */
 
     @GetMapping("/evaluate")
     public String evaluateAnswers(Model model) {
@@ -182,5 +182,16 @@ public String handleAnswer(@RequestParam("answer") Long selectedChoiceId, HttpSe
     model.addAttribute("displayNumber", questionNumber);
 
         return "quiz";
+    }
+    @GetMapping("/menu")
+    public String showMenuPage(HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            // 未ログインの場合はログインページへリダイレクト
+            return "redirect:/login";
+        }
+
+        // ログイン済みならmenu.htmlを表示
+        return "menu";
     }
 }
