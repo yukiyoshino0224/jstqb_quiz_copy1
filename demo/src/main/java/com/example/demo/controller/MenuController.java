@@ -31,6 +31,7 @@ public class MenuController {
 
     @GetMapping("/menu")
     public String showMenu() {
+        answerRepository.deleteAll();
         return "menu";
     }
 
@@ -44,6 +45,11 @@ public class MenuController {
     return "result";
 }
 
+    @GetMapping("/reset")
+    public String resetAnswers() {
+    answerRepository.deleteAll(); // 回答履歴を全部削除！
+    return "redirect:/menu";     // メニューに戻る
+}
 
     // クイズページ表示（指定された章と問題番号）
     @GetMapping("/chapter/{chapterNumber}/question/{questionNumber}")
