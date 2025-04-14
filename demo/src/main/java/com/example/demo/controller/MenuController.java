@@ -7,6 +7,7 @@ import com.example.demo.model.Choice;
 import com.example.demo.model.Question;
 import com.example.demo.service.QuizService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,14 @@ import jakarta.transaction.Transactional;
 @Controller
 public class MenuController {
 
-    private final QuizService quizService;
     private final AnswerRepository answerRepository;
+    private final QuizService quizService;
 
+    @Autowired
     public MenuController(QuizService quizService, AnswerRepository answerRepository) {
-    this.quizService = quizService;
-    this.answerRepository = answerRepository;
-}
+        this.quizService = quizService;
+        this.answerRepository = answerRepository;
+    }
 
     @GetMapping("/menu")
     public String showMenu() {
@@ -89,35 +91,33 @@ public class MenuController {
 
     @PostMapping("/submit")
 @ResponseBody
-public String handleAnswer(@RequestParam("answer") Long selectedChoiceId, HttpSession session) {
-    System.out.println("受け取った answerId: " + selectedChoiceId);
+public String handleAnswer(
+    @RequestParam("answer") Long selectedChoiceId,
+    @RequestParam("questionId") Long questionId
+) {
+    System.out.println("受け取った answerId: " + selectedChoiceId + ", questionId: " + questionId);
 
-    // 現在の質問リストとインデックスをセッションから取得
-    List<Question> questions = (List<Question>) session.getAttribute("mockExamQuestions");
-    Integer currentQuestionIndex = (Integer) session.getAttribute("currentQuestionIndex");
+    Question currentQuestion = quizService.getQuestionById(questionId); // ← service 側で用意してね
 
-    if (questions == null || currentQuestionIndex == null || currentQuestionIndex >= questions.size()) {
-        return "セッションが見つからないか、問題番号が不正です";
+    if (currentQuestion == null) {
+        return "指定された問題が見つかりません";
     }
 
-    Question currentQuestion = questions.get(currentQuestionIndex);
-
-    // 選択肢が正解かチェック
     boolean isCorrect = currentQuestion.getChoices().stream()
         .filter(Choice::isCorrect)
         .anyMatch(choice -> choice.getId().equals(selectedChoiceId));
 
-    // 回答を保存
     Answer answer = new Answer();
     answer.setQuestionId(currentQuestion.getId());
     answer.setSelectedChoiceId(selectedChoiceId);
     answer.setCorrect(isCorrect);
 
-    // ここでAnswerRepository使って保存！
-    answerRepository.save(answer);
-
-    // 次の問題用にインデックスを更新（必要なら）
-    session.setAttribute("currentQuestionIndex", currentQuestionIndex + 1);
+    try {
+        answerRepository.save(answer);
+        System.out.println("回答を保存しました！");
+    } catch (Exception e) {
+        System.out.println("保存時エラー: " + e.getMessage());
+    }
 
     return "OK";
 }
@@ -134,6 +134,7 @@ public String handleAnswer(@RequestParam("answer") Long selectedChoiceId, HttpSe
             Question question = mockExamQuestions.get(0);
 
             session.setAttribute("mockExamQuestions", mockExamQuestions);
+            session.setAttribute("currentQuestionIndex", 0);
 
              // 正解の選択肢
             Choice correctChoice = question.getChoices().stream()
