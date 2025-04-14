@@ -5,6 +5,7 @@ import com.example.demo.repository.AnswerRepository;
 import com.example.demo.model.Answer;
 import com.example.demo.model.Choice;
 import com.example.demo.model.Question;
+import com.example.demo.model.QuestionView;
 import com.example.demo.service.QuizService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
@@ -42,6 +44,32 @@ public class MenuController {
 
     Result result = new Result(correctCount, answers.size()); // ←Result に詰める（作ってる？）
     model.addAttribute("result", result);
+
+    if (!answers.isEmpty()) {
+        Long firstQuestionId = answers.get(0).getQuestionId();
+        Question question = quizService.getQuestionById(firstQuestionId); // service 経由で取得
+
+        if (question != null) {
+            model.addAttribute("chapterNumber", question.getChapter());
+            model.addAttribute("chapterTitle", question.getChapterTitle());
+        }
+    }
+
+        List<QuestionView> questionsForView = answers.stream().map(answer -> {
+        Question question = quizService.getQuestionById(answer.getQuestionId());
+        if (question != null) {
+            QuestionView view = new QuestionView();
+            view.setQuestion(question.getQuestion());
+            view.setCorrect(answer.isCorrect());
+            view.setChoices(question.getChoices());
+        return view;
+        }
+        return null;
+    }).filter(Objects::nonNull).toList();
+
+    model.addAttribute("questions", questionsForView);
+        
+
     return "result";
 }
 
