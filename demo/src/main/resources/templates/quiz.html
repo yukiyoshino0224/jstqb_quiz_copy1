@@ -178,18 +178,25 @@ fetch('/submit', {
     const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
     const nextQuestionNumber = currentQuestionNumber + 1;
     nextButton.onclick = function () {
-      let nextUrl = "";
-      if (chapterNumber) {
-        if (nextQuestionNumber > 10) {
-          nextUrl = "/evaluate";
-        } else {
-          nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-        }
+    let nextUrl = "";
+
+    if (chapterNumber) {
+      if (nextQuestionNumber > 10) {
+        nextUrl = "/evaluate";
       } else {
-        nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+        nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
       }
-      window.location.href = nextUrl;
-    };
+    } else {
+      if (nextQuestionNumber > 40) {
+        nextUrl = "/evaluate";
+    } else {
+      nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+    }
+  }
+
+  window.location.href = nextUrl;
+};
+
 
     submitButton.disabled = true;
     submitButton.style.cursor = 'not-allowed';
