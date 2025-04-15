@@ -97,11 +97,11 @@
 </head>
 <body>
   <div class="container">
-    <span th:if="${chapterNumber != null}">
-      <h1>第[[${chapterNumber}]]章 [[${chapterTitle}]]</h1>
-    </span>
-    <span th:if="${chapterNumber == null}">
+    <span th:if="${isMockExam}">
       <h1>模擬試験</h1>
+    </span>
+    <span th:unless="${isMockExam}">
+      <h1>第[[${chapterNumber}]]章 [[${chapterTitle}]]</h1>
     </span>
 
     <div class="score">
