@@ -44,12 +44,12 @@
     }
     .correct-mark {
       color: #66bb66;
-      font-size: 24px;
+      font-size: 30px;
       margin-right: 10px;
     }
     .incorrect-mark {
       color: #e74c3c;
-      font-size: 24px;
+      font-size: 30px;
       margin-right: 10px;
     }
     .options label {
@@ -72,6 +72,27 @@
       border-radius: 8px;
       cursor: pointer;
     }
+    .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .choice-box {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+  }
+  .choice-box.correct-answer {
+    background-color: #d2f5d2;
+    border-color: #66bb66;
+    font-weight: bold;
+  }
+  .choice-box.user-selected {
+    background-color: #ffe0b3;
+    border-color: #e57c3a;
+  }
   </style>
 </head>
 <body>
@@ -93,12 +114,11 @@
         <span th:unless="${question.isCorrect}" class="incorrect-mark">×</span>
         問題[[${stat.index + 1}]]：[[${question.question}]]
       </div>
-      <div class="options">
-        <div th:each="choice : ${question.choices}">
-          <label th:classappend="${choice.isCorrect} ? 'correct-answer' : ''">
-            [[${choice.choiceText}]]
-          </label>
+      <div class="options" th:each="choice : ${question.choices}">
+        <div class="choice-box" th:classappend="${choice.isCorrect} ? ' correct-answer' : ''">  <!-- ✅変更 -->
+         > [[${choice.choiceText}]]
         </div>
+      </div>
       </div>
     </div>
 
