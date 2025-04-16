@@ -67,10 +67,12 @@ public class MenuController {
             QuestionView view = new QuestionView();
             view.setQuestion(question.getQuestion());
             view.setCorrect(answer.isCorrect());
-            view.setChoices(question.getChoices());
+            view.setChoices(question.getChoices()); // 正解情報を含む選択肢のリストを設定
+            view.setSelectedChoiceId(answer.getSelectedChoiceId()); // ユーザーが選択したIDを設定
         return view;
-        }
+        }else{
         return null;
+        }
     }).filter(Objects::nonNull).toList();
 
     model.addAttribute("questions", questionsForView);

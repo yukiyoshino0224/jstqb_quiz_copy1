@@ -89,6 +89,11 @@
     border-color: #66bb66;
     font-weight: bold;
   }
+  .choice-box.incorrect-answer {
+  background-color: #f8d7da; /* 赤色の背景 */
+  border-color: #e74c3c; /* 赤色のボーダー */
+  font-weight: bold; /* 太字にして強調 */
+  }
   .choice-box.user-selected {
     background-color: #ffe0b3;
     border-color: #e57c3a;
@@ -116,9 +121,10 @@
       </div>
       <div class="options" th:each="choice : ${question.choices}">
         <div class="choice-box"
-              th:classappend="${choice.isCorrect} ? ' correct-answer' : ''">  <!-- ✅変更 -->
-          [[${choice.choiceText}]]
-          </div>
+              th:classappend="${choice.isCorrect ? 'correct-answer' : ''} 
+                                + ${(question.selectedChoiceId == choice.id && !choice.isCorrect) ? ' incorrect-answer' : ''}">
+            [[${choice.choiceText}]]
+        </div>
           <div style="margin-top: 5px; font-size: 14px; color: #555;">
             解説：[[${choice.explanation}]]
         </div>
