@@ -106,7 +106,7 @@
 
     <div class="score">
       [[${result.correctCount}]] / [[${result.totalCount}]] 問正解
-      正解率（[[${result.totalCount == 0 ? 0 : ((result.correctCount * 100.0 / result.totalCount) / 5).intValue() * 5}]]%）
+      正解率（[[${result.totalCount == 0 ? 0 : (result.correctCount * 100.0 / result.totalCount).intValue()}]]%）
     </div>
 
     <div th:each="question, stat : ${questions}" class="result-item">
