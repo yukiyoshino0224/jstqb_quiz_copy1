@@ -17,6 +17,8 @@ public class Choice {
 
     private boolean isCorrect;  // 正しい選択肢かどうかを示すフィールド
 
+    private String explanation;
+
     // Getter と Setter メソッド
     public Long getId() {
         return id;
@@ -48,5 +50,13 @@ public class Choice {
 
     public void setQuestion(Question question) {
         this.question = question;
+    }
+
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }
