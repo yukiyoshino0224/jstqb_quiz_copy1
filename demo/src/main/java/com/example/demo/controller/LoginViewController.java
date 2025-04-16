@@ -1,5 +1,41 @@
 package com.example.demo.controller;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@Controller
+public class LoginViewController {
+
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "login";
+    }
+
+    @GetMapping("/logout")
+    public String logout() {
+        return "redirect:/login?logout";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*package com.example.demo.controller;
+
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.CustomUserDetailsService;
@@ -19,7 +55,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 
-public class UserController {
+public class LoginController {
 
     @Autowired
     private HttpSession session;
@@ -32,7 +68,7 @@ public class UserController {
 
     private final CustomUserDetailsService userService;
 
-    public UserController(CustomUserDetailsService userService) {
+    public LoginController(CustomUserDetailsService userService) {
         this.userService = userService;
     }
 
@@ -65,4 +101,4 @@ public class UserController {
     //public String showWelcomePage() {
        // return "welcome"; // ログイン済みのユーザーに表示するページ
     //}
-}
+}*/
