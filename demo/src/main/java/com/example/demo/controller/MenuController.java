@@ -38,14 +38,20 @@ public class MenuController {
     }
 
     @GetMapping("/evaluate")
-    public String evaluateAnswers(Model model) {
+    public String evaluateAnswers(Model model, HttpSession session) {
     List<Answer> answers = answerRepository.findAll(); // ←全件とって評価！
     int correctCount = (int) answers.stream().filter(Answer::isCorrect).count(); // 正解の数カウント
 
     Result result = new Result(correctCount, answers.size()); // ←Result に詰める（作ってる？）
     model.addAttribute("result", result);
 
-    if (!answers.isEmpty()) {
+    Boolean isMockExam = (Boolean) session.getAttribute("isMockExam");
+
+    if (Boolean.TRUE.equals(isMockExam)) {
+        model.addAttribute("chapterNumber", "模擬試験"); // ★模擬試験用
+        model.addAttribute("chapterTitle", "");
+        model.addAttribute("isMockExam", Boolean.TRUE.equals(isMockExam));
+    }else if (!answers.isEmpty()) {
         Long firstQuestionId = answers.get(0).getQuestionId();
         Question question = quizService.getQuestionById(firstQuestionId); // service 経由で取得
 
@@ -74,8 +80,9 @@ public class MenuController {
 }
 
     @GetMapping("/reset")
-    public String resetAnswers() {
+    public String resetAnswers(HttpSession session) {
     answerRepository.deleteAll(); // 回答履歴を全部削除！
+    session.removeAttribute("isMockExam"); // ★リセット時に削除
     return "redirect:/menu";     // メニューに戻る
 }
 
@@ -169,6 +176,7 @@ public String handleAnswer(
 
             session.setAttribute("mockExamQuestions", mockExamQuestions);
             session.setAttribute("currentQuestionIndex", 0);
+            session.setAttribute("isMockExam", true);
 
              // 正解の選択肢
             Choice correctChoice = question.getChoices().stream()
