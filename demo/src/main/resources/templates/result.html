@@ -115,8 +115,12 @@
         問題[[${stat.index + 1}]]：[[${question.question}]]
       </div>
       <div class="options" th:each="choice : ${question.choices}">
-        <div class="choice-box" th:classappend="${choice.isCorrect} ? ' correct-answer' : ''">  <!-- ✅変更 -->
-         > [[${choice.choiceText}]]
+        <div class="choice-box"
+              th:classappend="${choice.isCorrect} ? ' correct-answer' : ''">  <!-- ✅変更 -->
+          [[${choice.choiceText}]]
+          </div>
+          <div style="margin-top: 5px; font-size: 14px; color: #555;">
+            解説：[[${choice.explanation}]]
         </div>
       </div>
       </div>
