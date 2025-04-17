@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
       background-color: #f8f8f8;
       padding: 20px;
     }
+
     .container {
       background-color: white;
       border-radius: 10px;
@@ -17,12 +19,14 @@
       max-width: 700px;
       margin: 0 auto;
     }
+
     .chapter-info {
       font-size: 22px;
       color: #2f628f;
       font-weight: bold;
       margin-bottom: 20px;
     }
+
     .question-box {
       position: relative;
       background-color: #ffffff;
@@ -31,6 +35,7 @@
       padding: 30px 20px 20px;
       margin-bottom: 20px;
     }
+
     .question-number {
       position: absolute;
       top: -15px;
@@ -42,13 +47,16 @@
       font-size: 14px;
       font-weight: bold;
     }
+
     .question-text {
       font-size: 18px;
       font-weight: bold;
     }
+
     .options {
       margin-top: 10px;
     }
+
     .options label {
       display: flex;
       align-items: center;
@@ -57,14 +65,17 @@
       font-size: 16px;
       gap: 10px;
     }
+
     .button-row {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
       margin-top: 30px;
     }
+
     .button-row button {
-      background-color: #cccccc; /* 初期状態でグレー */
+      background-color: #cccccc;
+      /* 初期状態でグレー */
       border: none;
       color: white;
       padding: 10px 20px;
@@ -72,11 +83,14 @@
       border-radius: 5px;
       cursor: not-allowed;
     }
+
     .button-row button#next-question {
-      background-color: #cccccc; /* 初期状態でグレー */
+      background-color: #cccccc;
+      /* 初期状態でグレー */
       color: white;
       cursor: not-allowed;
     }
+
     .correct-answer {
       margin-top: 20px;
       color: #2f628f;
@@ -87,16 +101,17 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="chapter-info">
-    <span th:if="${chapterNumber != null}">
-      第[[${chapterNumber}]]章 [[${chapterTitle}]]
-    </span>
-    <span th:if="${chapterNumber == null}">
-      模擬試験
-    </span>
-    <br><br>
+      <span th:if="${chapterNumber != null}">
+        第[[${chapterNumber}]]章 [[${chapterTitle}]]
+      </span>
+      <span th:if="${chapterNumber == null}">
+        模擬試験
+      </span>
+      <br><br>
     </div>
 
     <div class="question-box">
@@ -118,7 +133,7 @@
       <div class="button-row">
         <button type="submit" id="submit-button" disabled>回答を確定</button>
         <button type="button" id="next-question" style="background-color: #cccccc;" disabled>次へ</button>
-      </div>      
+      </div>
     </form>
 
     <div class="correct-answer" id="correct-answer">
@@ -130,84 +145,116 @@
     const submitButton = document.getElementById('submit-button');
     const nextButton = document.getElementById('next-question');
     const radioButtons = document.querySelectorAll('input[type="radio"]');
-    
+
     // ラジオボタンが選択されたらボタンを有効に
     radioButtons.forEach(radio => {
-      radio.addEventListener('change', function() {
+      radio.addEventListener('change', function () {
         submitButton.disabled = false;
         submitButton.style.backgroundColor = '#e57c3a';
         submitButton.style.cursor = 'pointer';
       });
     });
-  
-    document.getElementById('quiz-form').addEventListener('submit', function(event) {
-  event.preventDefault();
 
-  const selected = document.querySelector('input[name="answer"]:checked');
-  if (!selected) return;
+    document.getElementById('quiz-form').addEventListener('submit', function (event) {
+      event.preventDefault();
 
-  const answerValue = selected.value;
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) return;
 
-  // ここが修正ポイント！
-  const chapterNumber = /*[[${chapterNumber}]]*/ null;
-  const postUrl = chapterNumber != null ? '/chapterSubmit' : '/submit';
-  const questionId = /*[[${question.id}]]*/ 0;
+      const answerValue = selected.value;
 
-fetch('/submit', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  },
-  body: `answer=${encodeURIComponent(answerValue)}&questionId=${questionId}`
-})
-  .then(data => {
-    // 以下はそのまま（正解表示・次へ・ボタン制御など）
-    radioButtons.forEach(radio => {
-      radio.disabled = true;
-    });
+      // ここが修正ポイント！
+      const chapterNumber = /*[[${chapterNumber}]]*/ null;
+      const postUrl = chapterNumber != null ? '/chapterSubmit' : '/submit';
+      const questionId = /*[[${question.id}]]*/ 0;
 
-    const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';
-    const correctAnswerElement = document.getElementById('correct-answer');
-    correctAnswerElement.textContent = "答え：" + correctAnswerText;
-    correctAnswerElement.style.display = 'block';
+      fetch('/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `answer=${encodeURIComponent(answerValue)}&questionId=${questionId}`
+      })
+        .then(response => response.text())
+        .then(result => {
+          if (result === "already answered") {
+            alert("この問題はすでに回答済みです");
 
-    nextButton.disabled = false;
-    nextButton.style.backgroundColor = '#e57c3a';
-    nextButton.style.cursor = 'pointer';
+            nextButton.disabled = false;
+            nextButton.style.backgroundColor = '#e57c3a';
+            nextButton.style.cursor = 'pointer';
 
-    const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
-    const nextQuestionNumber = currentQuestionNumber + 1;
-    nextButton.onclick = function () {
-    let nextUrl = "";
+            const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
+            const nextQuestionNumber = currentQuestionNumber + 1;
 
-    if (chapterNumber) {
-      if (nextQuestionNumber > 10) {
-        nextUrl = "/evaluate";
-      } else {
-        nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
-      }
-    } else {
-      if (nextQuestionNumber > 40) {
-        nextUrl = "/evaluate";
-    } else {
-      nextUrl = "/quiz/random/question/" + nextQuestionNumber;
-    }
-  }
+            let nextUrl = "";
+            if (chapterNumber) {
+              if (nextQuestionNumber > 10) {
+                nextUrl = "/evaluate";
+              } else {
+                nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+              }
+            } else {
+              if (nextQuestionNumber > 40) {
+                nextUrl = "/evaluate";
+              } else {
+                nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+              }
+            }
 
-  window.location.href = nextUrl;
-};
+            nextButton.onclick = () => {
+              window.location.href = nextUrl;
+            };
+
+            return; // ここも忘れず！
+          }
 
 
-    submitButton.disabled = true;
-    submitButton.style.cursor = 'not-allowed';
-    submitButton.style.backgroundColor = '#cccccc';
-  })
-  .catch(error => {
-    alert("エラーが発生しました：" + error.message);
-  });
-});
+          // 以下はそのまま（正解表示・次へ・ボタン制御など）
+          radioButtons.forEach(radio => {
+            radio.disabled = true;
+          });
 
-  </script>    
+          const correctAnswerText = /*[[${correctChoiceText}]]*/ '正解なし';
+          const correctAnswerElement = document.getElementById('correct-answer');
+          correctAnswerElement.textContent = "答え：" + correctAnswerText;
+          correctAnswerElement.style.display = 'block';
+
+          nextButton.disabled = false;
+          nextButton.style.backgroundColor = '#e57c3a';
+          nextButton.style.cursor = 'pointer';
+
+          const currentQuestionNumber = /*[[${displayNumber}]]*/ 1;
+          const nextQuestionNumber = currentQuestionNumber + 1;
+          nextButton.onclick = function () {
+            let nextUrl = "";
+
+            if (chapterNumber) {
+              if (nextQuestionNumber > 10) {
+                nextUrl = "/evaluate";
+              } else {
+                nextUrl = "/chapter/" + chapterNumber + "/question/" + nextQuestionNumber;
+              }
+            } else {
+              if (nextQuestionNumber > 40) {
+                nextUrl = "/evaluate";
+              } else {
+                nextUrl = "/quiz/random/question/" + nextQuestionNumber;
+              }
+            }
+
+            window.location.href = nextUrl;
+          };
+        });
+      submitButton.disabled = true;
+      submitButton.style.cursor = 'not-allowed';
+      submitButton.style.backgroundColor = '#cccccc';
+    })
+      .catch(error => {
+        alert("エラーが発生しました：" + error.message);
+      });
+  </script>
 
 </body>
+
 </html>
