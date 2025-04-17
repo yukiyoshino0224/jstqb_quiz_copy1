@@ -6,6 +6,7 @@ public class QuestionView {
     private String question;
     private boolean isCorrect;
     private List<Choice> choices;
+    private Long selectedChoiceId;
 
     // Getter / Setter
     public String getQuestion() {
@@ -30,5 +31,13 @@ public class QuestionView {
 
     public void setChoices(List<Choice> choices) {
         this.choices = choices;
+    }
+    
+    public Long getSelectedChoiceId() {
+        return selectedChoiceId;
+    }
+
+    public void setSelectedChoiceId(Long selectedChoiceId) {
+        this.selectedChoiceId = selectedChoiceId;
     }
 }

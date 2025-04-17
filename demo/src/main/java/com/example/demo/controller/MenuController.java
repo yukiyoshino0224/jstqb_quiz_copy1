@@ -39,71 +39,77 @@ public class MenuController {
 
     @GetMapping("/evaluate")
     public String evaluateAnswers(Model model, HttpSession session) {
-    List<Answer> answers = answerRepository.findAll(); // ←全件とって評価！
-    int correctCount = (int) answers.stream().filter(Answer::isCorrect).count(); // 正解の数カウント
+        List<Answer> answers = answerRepository.findAll(); // ←全件とって評価！
+        int correctCount = (int) answers.stream().filter(Answer::isCorrect).count(); // 正解の数カウント
 
-    Result result = new Result(correctCount, answers.size()); // ←Result に詰める（作ってる？）
-    model.addAttribute("result", result);
+        Result result = new Result(correctCount, answers.size()); // ←Result に詰める（作ってる？）
+        model.addAttribute("result", result);
 
-    Boolean isMockExam = (Boolean) session.getAttribute("isMockExam");
+        Boolean isMockExam = (Boolean) session.getAttribute("isMockExam");
 
-    if (Boolean.TRUE.equals(isMockExam)) {
-        model.addAttribute("chapterNumber", "模擬試験"); // ★模擬試験用
-        model.addAttribute("chapterTitle", "");
-        model.addAttribute("isMockExam", Boolean.TRUE.equals(isMockExam));
-    }else if (!answers.isEmpty()) {
-        Long firstQuestionId = answers.get(0).getQuestionId();
-        Question question = quizService.getQuestionById(firstQuestionId); // service 経由で取得
+        if (Boolean.TRUE.equals(isMockExam)) {
+            model.addAttribute("chapterNumber", "模擬試験"); // ★模擬試験用
+            model.addAttribute("chapterTitle", "");
+            model.addAttribute("isMockExam", Boolean.TRUE.equals(isMockExam));
+        } else if (!answers.isEmpty()) {
+            Long firstQuestionId = answers.get(0).getQuestionId();
+            Question question = quizService.getQuestionById(firstQuestionId); // service 経由で取得
 
-        if (question != null) {
-            model.addAttribute("chapterNumber", question.getChapter());
-            model.addAttribute("chapterTitle", question.getChapterTitle());
+            if (question != null) {
+                model.addAttribute("chapterNumber", question.getChapter());
+                model.addAttribute("chapterTitle", question.getChapterTitle());
+            }
         }
-    }
 
         List<QuestionView> questionsForView = answers.stream().map(answer -> {
-        Question question = quizService.getQuestionById(answer.getQuestionId());
-        if (question != null) {
-            QuestionView view = new QuestionView();
-            view.setQuestion(question.getQuestion());
-            view.setCorrect(answer.isCorrect());
-            view.setChoices(question.getChoices());
-        return view;
-        }
-        return null;
-    }).filter(Objects::nonNull).toList();
+            Question question = quizService.getQuestionById(answer.getQuestionId());
+            if (question != null) {
+                QuestionView view = new QuestionView();
+                view.setQuestion(question.getQuestion());
+                view.setCorrect(answer.isCorrect());
+                view.setChoices(question.getChoices()); // 正解情報を含む選択肢のリストを設定
+                view.setSelectedChoiceId(answer.getSelectedChoiceId()); // ユーザーが選択したIDを設定
+                return view;
+            } else {
+                return null;
+            }
+        }).filter(Objects::nonNull).toList();
 
-    model.addAttribute("questions", questionsForView);
-        
+        model.addAttribute("questions", questionsForView);
 
-    return "result";
-}
+        return "result";
+    }
 
     @GetMapping("/reset")
     public String resetAnswers(HttpSession session) {
-    answerRepository.deleteAll(); // 回答履歴を全部削除！
-    session.removeAttribute("isMockExam"); // ★リセット時に削除
-    return "redirect:/menu";     // メニューに戻る
-}
+        answerRepository.deleteAll(); // 回答履歴を全部削除！
+        session.removeAttribute("isMockExam"); // ★リセット時に削除
+        return "redirect:/menu"; // メニューに戻る
+    }
 
     // クイズページ表示（指定された章と問題番号）
     @GetMapping("/chapter/{chapterNumber}/question/{questionNumber}")
     public String showQuestionByNumber(
-        @PathVariable int chapterNumber,
-        @PathVariable int questionNumber,
-        Model model
-    ) {
+            @PathVariable int chapterNumber,
+            @PathVariable int questionNumber,
+            Model model) {
         List<Question> questions = quizService.getQuestionsByChapter(chapterNumber);
 
-        // 問題番号が範囲内かチェック
         if (!questions.isEmpty() && questionNumber >= 1 && questionNumber <= questions.size()) {
             Question question = questions.get(questionNumber - 1);
 
             // 正解の選択肢を取得
             Choice correctChoice = question.getChoices().stream()
-                .filter(Choice::isCorrect)
-                .findFirst()
-                .orElse(null);
+                    .filter(Choice::isCorrect)
+                    .findFirst()
+                    .orElse(null);
+
+            // ★★【ここから追加：回答済みかどうかチェック】★★
+            Answer existingAnswer = answerRepository.findByQuestionId(question.getId());
+            boolean isAlreadyAnswered = existingAnswer != null;
+
+            model.addAttribute("isAlreadyAnswered", isAlreadyAnswered);
+            model.addAttribute("selectedChoiceId", isAlreadyAnswered ? existingAnswer.getSelectedChoiceId() : null);
 
             model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし");
             model.addAttribute("chapterNumber", chapterNumber);
@@ -131,38 +137,43 @@ public class MenuController {
     }
 
     @PostMapping("/submit")
-@ResponseBody
-public String handleAnswer(
-    @RequestParam("answer") Long selectedChoiceId,
-    @RequestParam("questionId") Long questionId
-) {
-    System.out.println("受け取った answerId: " + selectedChoiceId + ", questionId: " + questionId);
+    @ResponseBody
+    public String handleAnswer(
+            @RequestParam("answer") Long selectedChoiceId,
+            @RequestParam("questionId") Long questionId) {
+        System.out.println("受け取った answerId: " + selectedChoiceId + ", questionId: " + questionId);
 
-    Question currentQuestion = quizService.getQuestionById(questionId); // ← service 側で用意してね
+        Question currentQuestion = quizService.getQuestionById(questionId);
 
-    if (currentQuestion == null) {
-        return "指定された問題が見つかりません";
+        if (currentQuestion == null) {
+            return "指定された問題が見つかりません";
+        }
+
+        // ★ すでに回答されてるかチェック！
+        Answer existingAnswer = answerRepository.findByQuestionId(questionId);
+        if (existingAnswer != null) {
+            System.out.println("⚠️ すでに回答済みの問題です！登録しません！");
+            return "already answered"; // JS側でこの文字をキャッチして何もしないようにできる
+        }
+
+        boolean isCorrect = currentQuestion.getChoices().stream()
+                .filter(Choice::isCorrect)
+                .anyMatch(choice -> choice.getId().equals(selectedChoiceId));
+
+        Answer answer = new Answer();
+        answer.setQuestionId(currentQuestion.getId());
+        answer.setSelectedChoiceId(selectedChoiceId);
+        answer.setCorrect(isCorrect);
+
+        try {
+            answerRepository.save(answer);
+            System.out.println("回答を保存しました！");
+        } catch (Exception e) {
+            System.out.println("保存時エラー: " + e.getMessage());
+        }
+
+        return "OK";
     }
-
-    boolean isCorrect = currentQuestion.getChoices().stream()
-        .filter(Choice::isCorrect)
-        .anyMatch(choice -> choice.getId().equals(selectedChoiceId));
-
-    Answer answer = new Answer();
-    answer.setQuestionId(currentQuestion.getId());
-    answer.setSelectedChoiceId(selectedChoiceId);
-    answer.setCorrect(isCorrect);
-
-    try {
-        answerRepository.save(answer);
-        System.out.println("回答を保存しました！");
-    } catch (Exception e) {
-        System.out.println("保存時エラー: " + e.getMessage());
-    }
-
-    return "OK";
-}
-
 
     // 模擬試験の初期画面（ランダムな40問）
     @GetMapping("/quiz/random")
@@ -178,11 +189,11 @@ public String handleAnswer(
             session.setAttribute("currentQuestionIndex", 0);
             session.setAttribute("isMockExam", true);
 
-             // 正解の選択肢
+            // 正解の選択肢
             Choice correctChoice = question.getChoices().stream()
-            .filter(Choice::isCorrect)
-            .findFirst()
-            .orElse(null);
+                    .filter(Choice::isCorrect)
+                    .findFirst()
+                    .orElse(null);
 
             // 問題の情報を設定
             model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし"); // ここでは仮に"正解なし"
@@ -197,10 +208,9 @@ public String handleAnswer(
     // 模擬試験の次の問題
     @GetMapping("/quiz/random/question/{questionNumber}")
     public String showMockExamQuestion(
-        @PathVariable int questionNumber,
-        Model model,
-        HttpSession session
-    ) {
+            @PathVariable int questionNumber,
+            Model model,
+            HttpSession session) {
         List<Question> mockExamQuestions = (List<Question>) session.getAttribute("mockExamQuestions");
 
         // もし範囲外の番号ならエラーページ
@@ -212,17 +222,17 @@ public String handleAnswer(
 
         // 現在の問題を取得
         Question question = mockExamQuestions.get(questionNumber - 1);
-    
+
         // 正解の選択肢
         Choice correctChoice = question.getChoices().stream()
-            .filter(Choice::isCorrect)
-            .findFirst()
-            .orElse(null);
+                .filter(Choice::isCorrect)
+                .findFirst()
+                .orElse(null);
 
-    model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし");
-    model.addAttribute("question", question);
-    model.addAttribute("hasNext", questionNumber < mockExamQuestions.size());
-    model.addAttribute("displayNumber", questionNumber);
+        model.addAttribute("correctChoiceText", correctChoice != null ? correctChoice.getChoiceText() : "正解なし");
+        model.addAttribute("question", question);
+        model.addAttribute("hasNext", questionNumber < mockExamQuestions.size());
+        model.addAttribute("displayNumber", questionNumber);
 
         return "quiz";
     }
