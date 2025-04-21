@@ -172,7 +172,15 @@ public class MenuController {
             System.out.println("保存時エラー: " + e.getMessage());
         }
 
-        return "OK";
+        //return "OK";
+        //
+        // 結果を返すためのデータを返す
+    if (isCorrect) {
+        return "correct"; // 正解
+    } else {
+        return "incorrect"; // 不正解
+    }
+    //
     }
 
     // 模擬試験の初期画面（ランダムな40問）
