@@ -17,10 +17,12 @@
     
         <p th:if="${param.error}" style="color:red;">メールアドレスまたはパスワードが間違っています。</p>
     </form>
+
     
+    <p>登録してログインは<a th:href="@{/register}">こちら</a></p>
 
     <div th:if="${error}" style="color:red;">
-        <p th:text="${error}"></p>
+        <p th:text="${error}"></p> 
     </div>
 </body>
 </html>
